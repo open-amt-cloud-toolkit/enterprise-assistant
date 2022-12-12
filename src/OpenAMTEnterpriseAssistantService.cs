@@ -23,28 +23,28 @@ using System.Security.Cryptography.X509Certificates;
 using System.ServiceProcess;
 using System.Threading;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
-    public partial class MeshSatelliteService : ServiceBase
+    public partial class OpenAMTEnterpriseAssistantService : ServiceBase
     {
         private static bool log = false;
         private static bool debug = false;
         private bool ignoreCert = false;
-        private MeshCentralSatelliteServer centralServer = null;
+        private OpenAMTEnterpriseAssistantServer centralServer = null;
         private LocalPipeServer localPipeServer = null;
         private Thread ServerLaunchThread = null;
         private static String logFilePath = null;
         private static String debugFilePath = null;
-        private List<MeshCentralSatelliteServer.ServerEvent> eventsList = new List<MeshCentralSatelliteServer.ServerEvent>();
+        private List<OpenAMTEnterpriseAssistantServer.ServerEvent> eventsList = new List<OpenAMTEnterpriseAssistantServer.ServerEvent>();
 
         private bool RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
         {
             Log("RemoteCertificateValidationCallback");
-            if ((centralServer == null) || (centralServer.meshcentral == null)) return false;
-            return centralServer.meshcentral.RemoteCertificateValidation(certificate, chain, sslPolicyErrors);
+            if ((centralServer == null) || (centralServer.rps == null)) return false;
+            return centralServer.rps.RemoteCertificateValidation(certificate, chain, sslPolicyErrors);
         }
 
-        public MeshSatelliteService()
+        public OpenAMTEnterpriseAssistantService()
         {
             InitializeComponent();
 
@@ -144,7 +144,7 @@ namespace MeshCentralSatellite
             try
             {
                 // Create & start server
-                centralServer = new MeshCentralSatelliteServer(argServerName, argUserName, argPassword, null, argDevLocation);
+                centralServer = new OpenAMTEnterpriseAssistantServer(argServerName, argUserName, argPassword, null, argDevLocation);
                 centralServer.devNameType = argDevNameType;
                 centralServer.devSecurityGroups = argDevSecurityGroups;
                 centralServer.debug = debug;
@@ -168,7 +168,7 @@ namespace MeshCentralSatellite
             {
                 for (int i = eventsList.Count - 1; i >= 0; i--)
                 {
-                    MeshCentralSatelliteServer.ServerEvent e = eventsList[i];
+                    OpenAMTEnterpriseAssistantServer.ServerEvent e = eventsList[i];
                     localPipeServer.Send("event|" + e.icon + "|" + e.time.Ticks + "|" + e.msg);
                 }
             }
@@ -222,7 +222,7 @@ namespace MeshCentralSatellite
             }
         }
 
-        private void CentralServer_onEvent(MeshCentralSatelliteServer.ServerEvent e)
+        private void CentralServer_onEvent(OpenAMTEnterpriseAssistantServer.ServerEvent e)
         {
             lock (eventsList)
             {

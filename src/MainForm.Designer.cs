@@ -1,4 +1,4 @@
-﻿namespace MeshCentralSatellite
+﻿namespace OpenAMTEnterpriseAssistant
 {
     partial class MainForm
     {
@@ -42,8 +42,9 @@
             this.eventImageList = new System.Windows.Forms.ImageList(this.components);
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.mainStatusStrip = new System.Windows.Forms.StatusStrip();
-            this.mainToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.versionToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.mainToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,7 +80,6 @@
             this.sshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.updateTimer = new System.Windows.Forms.Timer(this.components);
-            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel5.SuspendLayout();
             this.mainPanel.SuspendLayout();
             this.mainTabControl.SuspendLayout();
@@ -142,6 +142,7 @@
             resources.ApplyResources(this.eventsListView, "eventsListView");
             this.eventsListView.FullRowSelect = true;
             this.eventsListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.eventsListView.HideSelection = false;
             this.eventsListView.Name = "eventsListView";
             this.eventsListView.SmallImageList = this.eventImageList;
             this.eventsListView.UseCompatibleStateImageBehavior = false;
@@ -173,7 +174,7 @@
             // 
             this.pictureBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(9)))), ((int)(((byte)(110)))), ((int)(((byte)(188)))));
             resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.Image = global::MeshCentralSatellite.Properties.Resources.MC2Banner;
+            this.pictureBox1.Image = global::OpenAMTEnterpriseAssistant.Properties.Resources.Satellite_Header_Image;
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             // 
@@ -187,17 +188,22 @@
             resources.ApplyResources(this.mainStatusStrip, "mainStatusStrip");
             this.mainStatusStrip.Name = "mainStatusStrip";
             // 
-            // mainToolStripStatusLabel
-            // 
-            this.mainToolStripStatusLabel.Name = "mainToolStripStatusLabel";
-            resources.ApplyResources(this.mainToolStripStatusLabel, "mainToolStripStatusLabel");
-            // 
             // versionToolStripStatusLabel
             // 
             this.versionToolStripStatusLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.versionToolStripStatusLabel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.versionToolStripStatusLabel.Name = "versionToolStripStatusLabel";
             resources.ApplyResources(this.versionToolStripStatusLabel, "versionToolStripStatusLabel");
+            // 
+            // mainToolStripStatusLabel
+            // 
+            this.mainToolStripStatusLabel.Name = "mainToolStripStatusLabel";
+            resources.ApplyResources(this.mainToolStripStatusLabel, "mainToolStripStatusLabel");
+            // 
+            // toolStripStatusLabel2
+            // 
+            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            resources.ApplyResources(this.toolStripStatusLabel2, "toolStripStatusLabel2");
             // 
             // mainMenuStrip
             // 
@@ -426,11 +432,6 @@
             this.updateTimer.Enabled = true;
             this.updateTimer.Interval = 2000;
             this.updateTimer.Tick += new System.EventHandler(this.updateTimer_Tick);
-            // 
-            // toolStripStatusLabel2
-            // 
-            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            resources.ApplyResources(this.toolStripStatusLabel2, "toolStripStatusLabel2");
             // 
             // MainForm
             // 

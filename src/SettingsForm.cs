@@ -19,7 +19,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     public partial class SettingsForm : Form
     {

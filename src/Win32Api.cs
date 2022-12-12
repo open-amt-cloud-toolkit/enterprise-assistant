@@ -18,7 +18,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     public class Win32Api
     {

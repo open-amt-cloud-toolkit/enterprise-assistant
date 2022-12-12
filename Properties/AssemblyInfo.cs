@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MeshCentral Satellite")]
+[assembly: AssemblyTitle("OpenAMT Enterprise Assistant")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Open Source")]
-[assembly: AssemblyProduct("MeshCentral Satellite")]
+[assembly: AssemblyCompany("Intel")]
+[assembly: AssemblyProduct("Open AMT Cloud Toolkit")]
 [assembly: AssemblyCopyright("Apache 2.0 license")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

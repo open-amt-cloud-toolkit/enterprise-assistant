@@ -21,7 +21,7 @@ using System.Net.Sockets;
 using System.Collections;
 using System.Net.NetworkInformation;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
 
     /// <summary>

@@ -22,7 +22,7 @@ using System.Configuration.Install;
 using System.Reflection;
 using System.ServiceProcess;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     static class Program
     {
@@ -38,7 +38,7 @@ namespace MeshCentralSatellite
             if (!System.Environment.UserInteractive)
             {
                 ServiceBase[] ServicesToRun;
-                ServicesToRun = new ServiceBase[] { new MeshSatelliteService() };
+                ServicesToRun = new ServiceBase[] { new OpenAMTEnterpriseAssistantService() };
                 ServiceBase.Run(ServicesToRun);
                 if (ServiceLaunchAttempt) return; // This is a bit of a hack, we don't really know if we are launching as a a service so we try it.
             }

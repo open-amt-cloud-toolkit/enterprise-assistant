@@ -29,7 +29,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Win32;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     public class webSocketClient : IDisposable
     {
@@ -48,7 +48,6 @@ namespace MeshCentralSatellite
         private int accopcodes = 0;
         private bool accmask = false;
         private int acclen = 0;
-        private bool proxyInUse = false;
         private string tlsCertFingerprint = null;
         private string tlsCertFingerprint2 = null;
         //private ConnectionErrors lastError = ConnectionErrors.NoError;
@@ -74,7 +73,6 @@ namespace MeshCentralSatellite
         public TLSCertificateCheck TLSCertCheck = TLSCertificateCheck.Verify;
         public X509Certificate2 tlsCert = null;
         public X509Certificate2 failedTlsCert = null;
-        static public bool nativeWebSocketFirst = false;
         private SemaphoreSlim receiveLock = new SemaphoreSlim(1, 1);
 
         // Outside variables
@@ -162,23 +160,15 @@ namespace MeshCentralSatellite
         {
             if (CTS != null) CTS.Dispose();
             CTS = new CancellationTokenSource();
-            try { await ws.ConnectAsync(url, CTS.Token); } catch (Exception) { SetState(0); return; }
-            await Task.Factory.StartNew(ReceiveLoop, CTS.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-        }
-
-        public async Task DisconnectAsync()
-        {
-            if (ws == null) return;
-            if (ws.State == WebSocketState.Open)
+            try
             {
-                CTS.CancelAfter(TimeSpan.FromSeconds(2));
-                await ws.CloseOutputAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None);
-                await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                await ws.ConnectAsync(url, CTS.Token);
             }
-            ws.Dispose();
-            ws = null;
-            CTS.Dispose();
-            CTS = null;
+            catch (Exception)
+            {
+                SetState(0); return;
+            }
+            await Task.Factory.StartNew(ReceiveLoop, CTS.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         public bool Start(Uri url, string tlsCertFingerprint, string tlsCertFingerprint2, bool force = false)
@@ -189,107 +179,20 @@ namespace MeshCentralSatellite
             if (tlsCertFingerprint != null) { this.tlsCertFingerprint = tlsCertFingerprint.ToUpper(); }
             if (tlsCertFingerprint2 != null) { this.tlsCertFingerprint2 = tlsCertFingerprint2.ToUpper(); }
 
-            if (nativeWebSocketFirst) { try { ws = new ClientWebSocket(); } catch (Exception) { } }
-            if (ws != null)
+            try
             {
+                ws = new ClientWebSocket();
                 // Use Windows native websockets
                 Log("Websocket (native) Start, URL=" + ((url == null) ? "(NULL)" : url.ToString()));
                 if (extraHeaders != null) { foreach (var key in extraHeaders.Keys) { ws.Options.SetRequestHeader(key, extraHeaders[key]); } }
                 Task t = ConnectAsync(url);
             }
-            else
+            catch (Exception)
             {
-                // Use C# coded websockets
-                Uri proxyUri = null;
-                Log("Websocket Start, URL=" + ((url == null) ? "(NULL)" : url.ToString()));
-
-                // Check if we need to use a HTTP proxy (Auto-proxy way)
-                try
-                {
-                    RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
-                    Object x = registryKey.GetValue("AutoConfigURL", null);
-                    if ((x != null) && (x.GetType() == typeof(string)))
-                    {
-                        string proxyStr = GetProxyForUrlUsingPac("http" + ((url.Port == 80) ? "" : "s") + "://" + url.Host + ":" + url.Port, x.ToString());
-                        if (proxyStr != null) { proxyUri = new Uri("http://" + proxyStr); }
-                    }
-                }
-                catch (Exception) { proxyUri = null; }
-
-                // Check if we need to use a HTTP proxy (Normal way)
-                if (proxyUri == null)
-                {
-                    var proxy = System.Net.HttpWebRequest.GetSystemWebProxy();
-                    proxyUri = proxy.GetProxy(url);
-                    if ((url.Host.ToLower() == proxyUri.Host.ToLower()) && (url.Port == proxyUri.Port)) { proxyUri = null; }
-                }
-
-                if (proxyUri != null)
-                {
-                    // Proxy in use
-                    Log("Websocket proxyUri: " + proxyUri.ToString());
-                    proxyInUse = true;
-                    wsclient = new TcpClient();
-                    wsclient.BeginConnect(proxyUri.Host, proxyUri.Port, new AsyncCallback(OnConnectSink), this);
-                }
-                else
-                {
-                    // No proxy in use
-                    Log("Websocket noProxy");
-                    proxyInUse = false;
-                    wsclient = new TcpClient();
-                    string h = url.Host;
-                    if (h.StartsWith("[") && h.EndsWith("]")) { h = h.Substring(1, h.Length - 2); }
-                    wsclient.BeginConnect(h, url.Port, new AsyncCallback(OnConnectSink), this);
-                }
-
-                // Start a timer that will fallback to native sockets automatically.
-                // For some proxy types, native websockets are the only way to connect.
-                if (connectTimer != null) { try { connectTimer.Dispose(); } catch (Exception) { } connectTimer = null; }
-                connectTimer = new System.Threading.Timer(new System.Threading.TimerCallback(ConnectTimerCallback), null, 3000, 3000);
             }
+
+
             return true;
-        }
-
-        private void OnConnectSink(IAsyncResult ar)
-        {
-            if (connectTimer != null) { try { connectTimer.Dispose(); } catch (Exception) { } connectTimer = null; }
-            if (wsclient == null) return;
-
-            // Accept the connection
-            try
-            {
-                wsclient.EndConnect(ar);
-            }
-            catch (Exception ex)
-            {
-                Log("Websocket TCP failed to connect: " + ex.ToString());
-                if (nativeWebSocketFirst == false)
-                {
-                    ConnectTimerCallback(null);
-                }
-                else
-                {
-                    Dispose();
-                }
-                return;
-            }
-
-            if (proxyInUse == true)
-            {
-                // Send proxy connection request
-                wsrawstream = wsclient.GetStream();
-                byte[] proxyRequestBuf = UTF8Encoding.UTF8.GetBytes("CONNECT " + url.Host + ":" + url.Port + " HTTP/1.1\r\nHost: " + url.Host + ":" + url.Port + "\r\n\r\n");
-                wsrawstream.Write(proxyRequestBuf, 0, proxyRequestBuf.Length);
-                wsrawstream.BeginRead(readBuffer, readBufferLen, readBuffer.Length - readBufferLen, new AsyncCallback(OnProxyResponseSink), this);
-            }
-            else
-            {
-                // Start TLS connection
-                Log("Websocket TCP connected, doing TLS...");
-                wsstream = new SslStream(wsclient.GetStream(), false, VerifyServerCertificate, null);
-                try { wsstream.BeginAuthenticateAsClient(url.Host, null, System.Security.Authentication.SslProtocols.Tls12, false, new AsyncCallback(OnTlsSetupSink), this); } catch (Exception) { Dispose(); }
-            }
         }
 
         private void OnProxyResponseSink(IAsyncResult ar)
@@ -340,18 +243,6 @@ namespace MeshCentralSatellite
                     try { wsrawstream.BeginRead(readBuffer, readBufferLen, readBuffer.Length - readBufferLen, new AsyncCallback(OnProxyResponseSink), this); } catch (Exception) { Dispose(); }
                 }
             }
-        }
-
-        public string Base64Encode(string plainText)
-        {
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-            return System.Convert.ToBase64String(plainTextBytes);
-        }
-
-        public string Base64Decode(string base64EncodedData)
-        {
-            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
-            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
         }
 
         private void OnTlsSetupSink(IAsyncResult ar)
@@ -482,22 +373,6 @@ namespace MeshCentralSatellite
         private void PingTimerCallback(object state) { SendPing(null, 0, 0); }
 
         private void PongTimerCallback(object state) { SendPong(null, 0, 0); }
-
-        private void ConnectTimerCallback(object state) {
-            // Switch from C# sockets to native sockets
-            if ((nativeWebSocketFirst == false) && (this.state == ConnectionStates.Connecting))
-            {
-                Log("Switching to native Websocket");
-                if (pingTimer != null) { try { pingTimer.Dispose(); } catch (Exception) { } pingTimer = null; }
-                if (pongTimer != null) { try { pongTimer.Dispose(); } catch (Exception) { } pongTimer = null; }
-                if (connectTimer != null) { try { connectTimer.Dispose(); } catch (Exception) { } connectTimer = null; }
-                if (wsstream != null) { try { wsstream.Close(); } catch (Exception) { } try { wsstream.Dispose(); } catch (Exception) { } wsstream = null; }
-                if (wsclient != null) { wsclient = null; }
-                if (pendingSendBuffer != null) { pendingSendBuffer.Dispose(); pendingSendBuffer = null; }
-                nativeWebSocketFirst = true;
-                Start(this.url, this.tlsCertFingerprint, this.tlsCertFingerprint2, true);
-            }
-        }
 
         private int ProcessBuffer(byte[] buffer, int offset, int len)
         {

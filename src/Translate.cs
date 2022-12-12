@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     public class Translate
     {

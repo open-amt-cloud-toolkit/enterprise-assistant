@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     #region Win32 API Declarations
 

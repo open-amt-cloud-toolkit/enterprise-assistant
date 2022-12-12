@@ -8,16 +8,20 @@
     <ProjectGuid>{14404E31-A185-4CD8-8DC3-6A2F5FE216FF}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MeshCentralSatellite</RootNamespace>
-    <AssemblyName>MeshCentralSatellite</AssemblyName>
+    <RootNamespace>OpenAMTEnterpriseAssistant</RootNamespace>
+    <AssemblyName>OpenAMTEnterpriseAssistant</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <StartupObject>MeshCentralSatellite.Program</StartupObject>
+    <StartupObject>OpenAMTEnterpriseAssistant.Program</StartupObject>
     <ApplicationIcon>src\MeshServer.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,12 +34,8 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -120,14 +120,14 @@
     <Compile Include="src\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="src\MeshCentralSatelliteServer.cs" />
-    <Compile Include="src\MeshCentralServer.cs" />
+    <Compile Include="src\OpenAMTEnterpriseAssistant.cs" />
+    <Compile Include="src\RemoteProvisioningServer.cs" />
     <Compile Include="src\MeshDiscovery.cs" />
-    <Compile Include="src\MeshSatelliteService.cs">
+    <Compile Include="src\OpenAMTEnterpriseAssistantService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="src\MeshSatelliteService.Designer.cs">
-      <DependentUpon>MeshSatelliteService.cs</DependentUpon>
+    <Compile Include="src\OpenAMTEnterpriseAssistantService.Designer.cs">
+      <DependentUpon>OpenAMTEnterpriseAssistantService.cs</DependentUpon>
     </Compile>
     <Compile Include="src\Program.cs" />
     <Compile Include="src\ProjectInstaller.cs">
@@ -163,8 +163,8 @@
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="src\MeshSatelliteService.resx">
-      <DependentUpon>MeshSatelliteService.cs</DependentUpon>
+    <EmbeddedResource Include="src\OpenAMTEnterpriseAssistantService.resx">
+      <DependentUpon>OpenAMTEnterpriseAssistantService.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="src\ProjectInstaller.resx">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
@@ -197,6 +197,7 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Satellite Header Image.jpg" />
     <Content Include="src\MeshServer.ico" />
     <None Include="readme.md" />
     <None Include="Resources\icon-monitor1.png" />

@@ -1,4 +1,4 @@
-﻿namespace MeshCentralSatellite
+﻿namespace OpenAMTEnterpriseAssistant
 {
     partial class ProjectInstaller
     {
