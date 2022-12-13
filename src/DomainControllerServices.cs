@@ -24,7 +24,7 @@ using System.Text.RegularExpressions;
 using System.DirectoryServices.ActiveDirectory;
 using System.Security.Cryptography.X509Certificates;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     public class DomainControllerServices
     {

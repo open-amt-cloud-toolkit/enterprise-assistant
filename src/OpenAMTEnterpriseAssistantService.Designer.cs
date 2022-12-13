@@ -1,6 +1,6 @@
-﻿namespace MeshCentralSatellite
+﻿namespace OpenAMTEnterpriseAssistant
 {
-    partial class MeshSatelliteService
+    partial class OpenAMTEnterpriseAssistantService
     {
         /// <summary> 
         /// Required designer variable.
@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             // 
-            // MeshService
+            // OpenAMTEnterpriseAssistantService
             // 
-            this.ServiceName = "MeshCentral Satellite Server";
+            this.ServiceName = "OpenAMT Enterprise Assistant";
 
         }
 

@@ -17,7 +17,7 @@ limitations under the License.
 using Microsoft.Win32;
 using System;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     public static class Settings
     {

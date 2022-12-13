@@ -27,15 +27,16 @@ using Microsoft.Win32;
 using System.ServiceProcess;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using OpenAMTEnterpriseAssistant;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     public partial class MainForm : Form
     {
         public int currentPanel = 0;
         public DateTime refreshTime = DateTime.Now;
-        public MeshCentralSatelliteServer server = null;
-        public MeshSatelliteService service = null;
+        public OpenAMTEnterpriseAssistantServer server = null;
+        public OpenAMTEnterpriseAssistantService service = null;
         public X509Certificate2 lastBadConnectCert = null;
         public LocalPipeClient localPipeClient = null;
         public string title;
@@ -73,8 +74,8 @@ namespace MeshCentralSatellite
 
         private bool RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
         {
-            if ((server == null) || (server.meshcentral == null)) return false;
-            return server.meshcentral.RemoteCertificateValidation(certificate, chain, sslPolicyErrors);
+            if ((server == null) || (server.rps == null)) return false;
+            return server.rps.RemoteCertificateValidation(certificate, chain, sslPolicyErrors);
         }
 
         public MainForm(string[] args)
@@ -129,12 +130,11 @@ namespace MeshCentralSatellite
             string delete = null;
             bool runAsService = false;
             foreach (string arg in this.args) {
-                if (arg.ToLower() == "-log") { log = true; }
+                //if (arg.ToLower() == "-log") { log = true; }
                 if (arg.ToLower() == "-debug") { debug = true; }
                 if (arg.ToLower() == "-tlsdump") { tlsdump = true; }
                 if (arg.ToLower() == "-ignorecert") { ignoreCert = true; }
                 if (arg.ToLower() == "-service") { runAsService = true; }
-                if (arg.ToLower() == "-native") { webSocketClient.nativeWebSocketFirst = true; }
                 if ((arg.Length > 8) && (arg.Substring(0, 8).ToLower() == "-update:")) { update = arg.Substring(8); }
                 if ((arg.Length > 8) && (arg.Substring(0, 8).ToLower() == "-delete:")) { delete = arg.Substring(8); }
             }
@@ -143,7 +143,7 @@ namespace MeshCentralSatellite
             // To make it easy to debug when running as a service, we emulate running as a service with the -service switch
             if (runAsService)
             {
-                service = new MeshSatelliteService();
+                service = new OpenAMTEnterpriseAssistantService();
                 service.StartServer();
                 return;
             }
@@ -280,7 +280,7 @@ namespace MeshCentralSatellite
             try
             {
                 // Create & start server
-                server = new MeshCentralSatelliteServer(argServerName, argUserName, argPassword, null, argDevLocation);
+                server = new OpenAMTEnterpriseAssistantServer(argServerName, argUserName, argPassword, null, argDevLocation);
                 server.devNameType = argDevNameType;
                 server.devSecurityGroups = argDevSecurityGroups;
                 server.debug = debug;
@@ -334,7 +334,7 @@ namespace MeshCentralSatellite
             Log(msg);
         }
 
-        private void Server_onEvent(MeshCentralSatelliteServer.ServerEvent e)
+        private void Server_onEvent(OpenAMTEnterpriseAssistantServer.ServerEvent e)
         {
             AddEvent(e.icon, e.time, e.msg);
         }
@@ -342,7 +342,7 @@ namespace MeshCentralSatellite
         private void Server_onStateChanged(int state)
         {
             if (server == null) return;
-            if (this.InvokeRequired) { this.Invoke(new MeshCentralServer.onStateChangedHandler(Server_onStateChanged), state); return; }
+            if (this.InvokeRequired) { this.Invoke(new RemoteProvisioningServer.onStateChangedHandler(Server_onStateChanged), state); return; }
 
             if (state == 0)
             {

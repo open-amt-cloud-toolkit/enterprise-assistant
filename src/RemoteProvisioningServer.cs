@@ -26,10 +26,10 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.Win32;
 using System.Reflection;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
 
-    public class MeshCentralServer
+    public class RemoteProvisioningServer
     {
         public Uri wsurl = null;
         private string user = null;
@@ -40,10 +40,6 @@ namespace MeshCentralSatellite
         private int constate = 0;
         public string disconnectCause = null;
         public string disconnectMsg = null;
-        public bool disconnectEmail2FA = false;
-        public bool disconnectEmail2FASent = false;
-        public bool disconnectSms2FA = false;
-        public bool disconnectSms2FASent = false;
         public X509Certificate2 disconnectCert;
         public string authCookie = null;
         public string rauthCookie = null;
@@ -57,7 +53,6 @@ namespace MeshCentralSatellite
         public bool ignoreCert = false;
         public string userid = null;
         public string username = null;
-        public int twoFactorCookieDays = 0;
         public Dictionary<string, ulong> userRights = null;
         public Dictionary<string, string> userGroups = null;
         private JavaScriptSerializer JSON = new JavaScriptSerializer();
@@ -149,9 +144,12 @@ namespace MeshCentralSatellite
 
             // Setup extra headers if needed
             Dictionary<string, string> extraHeaders = new Dictionary<string, string>();
-            if (user != null && pass != null && token != null) {
+            if (user != null && pass != null && token != null)
+            {
                 extraHeaders.Add("x-meshauth", Base64Encode(user) + "," + Base64Encode(pass) + "," + Base64Encode(token));
-            } else if (user != null && pass != null) {
+            }
+            else if (user != null && pass != null)
+            {
                 extraHeaders.Add("x-meshauth", Base64Encode(user) + "," + Base64Encode(pass));
             }
 
@@ -208,7 +206,8 @@ namespace MeshCentralSatellite
 
         public void refreshCookies()
         {
-            if (wc != null) {
+            if (wc != null)
+            {
                 logdebug("RefreshCookies");
                 wc.SendString("{\"action\":\"authcookie\"}");
                 wc.SendString("{\"action\":\"logincookie\"}");
@@ -232,7 +231,9 @@ namespace MeshCentralSatellite
             try
             {
                 jsonAction = JSON.Deserialize<Dictionary<string, object>>(data);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 logdebug("processServerData JSON Deserialize error: \r\n" + ex.ToString());
                 logdebug("Invalid data (" + data.Length + "): \r\n" + data);
                 return;
@@ -259,11 +260,6 @@ namespace MeshCentralSatellite
                         {
                             disconnectCause = jsonAction["cause"].ToString();
                             disconnectMsg = jsonAction["msg"].ToString();
-                            if (jsonAction.ContainsKey("email2fa")) { disconnectEmail2FA = (bool)jsonAction["email2fa"]; } else { disconnectEmail2FA = false; }
-                            if (jsonAction.ContainsKey("email2fasent")) { disconnectEmail2FASent = (bool)jsonAction["email2fasent"]; } else { disconnectEmail2FASent = false; }
-                            if (jsonAction.ContainsKey("sms2fa")) { disconnectSms2FA = (bool)jsonAction["sms2fa"]; } else { disconnectSms2FA = false; }
-                            if (jsonAction.ContainsKey("sms2fasent")) { disconnectSms2FASent = (bool)jsonAction["sms2fasent"]; } else { disconnectSms2FASent = false; }
-                            if (jsonAction.ContainsKey("twoFactorCookieDays") && (jsonAction["twoFactorCookieDays"].GetType() == typeof(int))) { twoFactorCookieDays = (int)jsonAction["twoFactorCookieDays"]; }
                             break;
                         }
                     case "serverinfo":
@@ -314,26 +310,6 @@ namespace MeshCentralSatellite
                             }
                             break;
                         }
-                    case "event":
-                        {
-                            Dictionary<string, object> ev = (Dictionary<string, object>)jsonAction["event"];
-                            string action2 = ev["action"].ToString();
-                            /*
-                            switch (action2)
-                            {
-
-                            }
-                            */
-                            break;
-                        }
-                    case "msg":
-                        {
-                            if (jsonAction.ContainsKey("type"))
-                            {
-                                string type = (string)jsonAction["type"];
-                            }
-                            break;
-                        }
                     case "twoFactorCookie":
                         {
                             if (jsonAction.ContainsKey("cookie"))
@@ -371,7 +347,7 @@ namespace MeshCentralSatellite
                             }
                             break;
                         }
-                        case "satellite":
+                    case "satellite":
                         {
                             if (onSatelliteMessage != null) { onSatelliteMessage(jsonAction); }
                             break;
@@ -402,19 +378,35 @@ namespace MeshCentralSatellite
 
         public delegate void onStateChangedHandler(int state);
         public event onStateChangedHandler onStateChanged;
-        public void changeState(int newState) { if (constate != newState) { constate = newState; if (onStateChanged != null) { onStateChanged(constate); } } }
+        public void changeState(int newState)
+        {
+            if (constate != newState)
+            {
+                constate = newState;
+                if (onStateChanged != null)
+                {
+                    onStateChanged(constate);
+                }
+            }
+        }
 
         public delegate void onSatelliteMessageHandler(Dictionary<string, object> message);
         public event onSatelliteMessageHandler onSatelliteMessage;
 
         private void changeStateEx(webSocketClient sender, webSocketClient.ConnectionStates newState)
         {
-            if (newState == webSocketClient.ConnectionStates.Disconnected) {
-                if (sender.failedTlsCert != null) { certHash = null; disconnectMsg = "cert"; disconnectCert = sender.failedTlsCert; }
-                changeState(0);
+            if (newState == webSocketClient.ConnectionStates.Disconnected)
+            {
+                if (sender.failedTlsCert != null)
+                {
+                    certHash = null; 
+                    disconnectMsg = "cert"; 
+                    disconnectCert = sender.failedTlsCert;
+                }
+                changeState(((int)webSocketClient.ConnectionStates.Disconnected));
             }
-            if (newState == webSocketClient.ConnectionStates.Connecting) { changeState(1); }
-            if (newState == webSocketClient.ConnectionStates.Connected) { }
+            if (newState == webSocketClient.ConnectionStates.Connecting) { changeState(((int)webSocketClient.ConnectionStates.Connecting)); }
+            if (newState == webSocketClient.ConnectionStates.Connected) { changeState(((int)webSocketClient.ConnectionStates.Connected)); }
         }
 
         public delegate void onLoginTokenChangedHandler();

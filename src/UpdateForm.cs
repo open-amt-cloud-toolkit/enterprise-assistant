@@ -25,7 +25,7 @@ using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     public partial class UpdateForm : Form
     {

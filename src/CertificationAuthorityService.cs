@@ -23,7 +23,7 @@ using Interop.CERTADMLib;
 using CERTCLILib;
 using CERTENROLLLib;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
     public class CertificationAuthorityService
     {

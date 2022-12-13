@@ -1,4 +1,4 @@
-﻿namespace MeshCentralSatellite
+﻿namespace OpenAMTEnterpriseAssistant
 {
     partial class UpdateForm
     {
@@ -70,7 +70,7 @@
             // pictureBox1
             // 
             resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.Image = global::MeshCentralSatellite.Properties.Resources.MeshCentral;
+            this.pictureBox1.Image = global::OpenAMTEnterpriseAssistant.Properties.Resources.MeshCentral;
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             // 

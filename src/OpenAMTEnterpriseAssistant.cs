@@ -20,12 +20,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
-namespace MeshCentralSatellite
+namespace OpenAMTEnterpriseAssistant
 {
-    public class MeshCentralSatelliteServer
+    public class OpenAMTEnterpriseAssistantServer
     {
         private DomainControllerServices dc = null;
-        public MeshCentralServer meshcentral = null;
+        public RemoteProvisioningServer rps = null;
         private string host = null;
         private string user = null;
         private string pass = null;
@@ -35,8 +35,8 @@ namespace MeshCentralSatellite
         public List<string> devSecurityGroups = null;
         public bool debug = false;
         public bool ignoreCert = false;
-        private bool autoReconnect = false;
-        public int connectionState { get { if (meshcentral == null) { return 0; } else { return meshcentral.connectionState; } } }
+        private bool autoReconnect = true;
+        public int connectionState { get { if (rps == null) { return 0; } else { return rps.connectionState; } } }
 
         // Certificate Authority
         private string caName = null;
@@ -66,7 +66,7 @@ namespace MeshCentralSatellite
 
         private readonly string[] netAuthStrings = { "eap-tls", "eap-ttls/mschapv2", "peapv0/eap-mschapv2", "peapv1/eap-gtc", "eap-fast/mschapv2", "eap-fast/gtc", "eap-md5", "eap-psk", "eap-sim", "eap-aka", "eap-fast/tls" };
 
-        public MeshCentralSatelliteServer(string host, string user, string pass, string loginkey, string devLocation)
+        public OpenAMTEnterpriseAssistantServer(string host, string user, string pass, string loginkey, string devLocation)
         {
             this.host = host;
             this.user = user;
@@ -215,33 +215,33 @@ namespace MeshCentralSatellite
 
         public void Start()
         {
-            Log("MeshCentralSatelliteServer - Start();");
+            Log("Open AMT Enterprise Assistant - Start();");
             autoReconnect = true;
 
-            if (meshcentral != null)
+            if (rps != null)
             {
                 // Already connected instance
-                meshcentral.onStateChanged += Meshcentral_onStateChanged;
-                meshcentral.onTwoFactorCookie += Meshcentral_onTwoFactorCookie;
-                meshcentral.onSatelliteMessage += Meshcentral_onSatelliteMessage;
-                if (onStateChanged != null) { onStateChanged(meshcentral.connectionState); }
+                rps.onStateChanged += Meshcentral_onStateChanged;
+                rps.onTwoFactorCookie += Meshcentral_onTwoFactorCookie;
+                rps.onSatelliteMessage += Meshcentral_onSatelliteMessage;
+                if (onStateChanged != null) { onStateChanged(rps.connectionState); }
             }
             else
             {
                 // Need to perform connection
-                meshcentral = new MeshCentralServer();
-                meshcentral.onStateChanged += Meshcentral_onStateChanged;
-                meshcentral.onTwoFactorCookie += Meshcentral_onTwoFactorCookie;
-                meshcentral.onSatelliteMessage += Meshcentral_onSatelliteMessage;
-                meshcentral.debug = debug;
-                meshcentral.ignoreCert = ignoreCert;
+                rps = new RemoteProvisioningServer();
+                rps.onStateChanged += Meshcentral_onStateChanged;
+                rps.onTwoFactorCookie += Meshcentral_onTwoFactorCookie;
+                rps.onSatelliteMessage += Meshcentral_onSatelliteMessage;
+                rps.debug = debug;
+                rps.ignoreCert = ignoreCert;
                 if (loginkey == null)
                 {
-                    meshcentral.connect(new Uri("wss://" + host + "/control.ashx"), user, pass, null);
+                    rps.connect(new Uri(host), user, pass, null);
                 }
                 else
                 {
-                    meshcentral.connect(new Uri("wss://" + host + "/control.ashx?key=" + loginkey), user, pass, null);
+                    rps.connect(new Uri(host + "?key=" + loginkey), user, pass, null);
                 }
             }
         }
@@ -312,15 +312,15 @@ namespace MeshCentralSatellite
             }
             catch (Exception) { satelliteFlags = 0; }
 
-            if (devname == null) { devname = NodeIdToComputerId(nodeid); }
+            if (devname == null) { devname = nodeid; }
 
             if ((satelliteFlags != 2) || (nodeid == null) || (domain == null) || (reqid == null) || (authProtocol > 10) || (authProtocol < 0))
             {
-                Log("MeshCentralSatelliteServer - Invalid request for 802.1x profile.");
+                Log("Open AMT Enterprise Assistant - Invalid request for 802.1x profile.");
                 return;
             }
 
-            if (devname != null) { Log("MeshCentralSatelliteServer - " + devname + " - 802.1x " + netAuthStrings[authProtocol] + " request."); }
+            if (devname != null) { Log("Open AMT Enterprise Assistant - " + devname + " - 802.1x " + netAuthStrings[authProtocol] + " request."); }
 
             switch (authProtocol)
             {
@@ -379,8 +379,8 @@ namespace MeshCentralSatellite
                                 response["certid"] = clientCertId;
                                 message["subaction"] = "802.1x-Profile-Completed";
                                 message["response"] = response;
-                                meshcentral.sendCommand(message);
-                                Log("MeshCentralSatelliteServer - " + devname + " - Cert OK, Sent response.");
+                                rps.sendCommand(message);
+                                Log("Open AMT Enterprise Assistant - " + devname + " - Cert OK, Sent response.");
                             }
                             else
                             {
@@ -403,8 +403,8 @@ namespace MeshCentralSatellite
                             rmessage["domain"] = domain;
                             rmessage["subaction"] = "802.1x-KeyPair-Request";
                             rmessage["reqid"] = reqid;
-                            meshcentral.sendCommand(rmessage);
-                            Log("MeshCentralSatelliteServer - " + devname + " - Requesting key pair generation...");
+                            rps.sendCommand(rmessage);
+                            Log("Open AMT Enterprise Assistant - " + devname + " - Requesting key pair generation...");
                         }
                         break;
                     }
@@ -430,8 +430,8 @@ namespace MeshCentralSatellite
                                 if (caRootCert != null) { response["rootcert"] = Convert.ToBase64String(caRootCert.GetRawCertData(), Base64FormattingOptions.None); }
                                 message["subaction"] = "802.1x-Profile-Completed";
                                 message["response"] = response;
-                                meshcentral.sendCommand(message);
-                                Log("MeshCentralSatelliteServer - " + devname + " - Sent response.");
+                                rps.sendCommand(message);
+                                Log("Open AMT Enterprise Assistant - " + devname + " - Sent response.");
                             }
                             else
                             {
@@ -442,7 +442,7 @@ namespace MeshCentralSatellite
                     }
                 default:
                     {
-                        Log("MeshCentralSatelliteServer - " + devname + " - Unsupported 802.1x protocol: " + netAuthStrings[authProtocol]);
+                        Log("Open AMT Enterprise Assistant - " + devname + " - Unsupported 802.1x protocol: " + netAuthStrings[authProtocol]);
                         break;
                     }
             }
@@ -479,11 +479,11 @@ namespace MeshCentralSatellite
             }
             catch (Exception) { satelliteFlags = 0; }
 
-            if (devname == null) { devname = NodeIdToComputerId(nodeid); }
+            if (devname == null) { devname = nodeid; }
 
             if ((satelliteFlags != 2) || (nodeid == null) || (domain == null) || (reqid == null) || (authProtocol > 10) || (authProtocol < 0))
             {
-                Log("MeshCentralSatelliteServer - Invalid response for 802.1x key pair generation.");
+                Log("Open AMT Enterprise Assistant - Invalid response for 802.1x key pair generation.");
                 return;
             }
 
@@ -523,7 +523,7 @@ namespace MeshCentralSatellite
                         string csr = CertificationAuthorityService.GenerateNullCsr(objDistinguishedName, altNames, caTemplate, Convert.FromBase64String(DERKey));
                         if (csr == null)
                         {
-                            Log("MeshCentralSatelliteServer - " + devname + " - Unable to generate NULL CSR.");
+                            Log("Open AMT Enterprise Assistant - " + devname + " - Unable to generate NULL CSR.");
                         }
                         else
                         {
@@ -541,14 +541,14 @@ namespace MeshCentralSatellite
                             rmessage["subaction"] = "802.1x-CSR-Request";
                             rmessage["reqid"] = reqid;
                             rmessage["response"] = response;
-                            meshcentral.sendCommand(rmessage);
-                            Log("MeshCentralSatelliteServer - " + devname + " - Requesting CSR signature...");
+                            rps.sendCommand(rmessage);
+                            Log("Open AMT Enterprise Assistant - " + devname + " - Requesting CSR signature...");
                         }
                         break;
                     }
                 default:
                     {
-                        Log("MeshCentralSatelliteServer - " + devname + " - Unsupported 802.1x protocol: " + netAuthStrings[authProtocol]);
+                        Log("Open AMT Enterprise Assistant - " + devname + " - Unsupported 802.1x protocol: " + netAuthStrings[authProtocol]);
                         break;
                     }
             }
@@ -586,7 +586,7 @@ namespace MeshCentralSatellite
 
             if ((satelliteFlags != 2) || (nodeid == null) || (domain == null) || (reqid == null) || (authProtocol > 10) || (authProtocol < 0) || (signedcsr == null))
             {
-                Log("MeshCentralSatelliteServer - Invalid response for 802.1x CSR.");
+                Log("Open AMT Enterprise Assistant - Invalid response for 802.1x CSR.");
                 return;
             }
 
@@ -619,8 +619,8 @@ namespace MeshCentralSatellite
                                 //response["password"] = computer.Password;
                                 message["subaction"] = "802.1x-Profile-Completed";
                                 message["response"] = response;
-                                meshcentral.sendCommand(message);
-                                Log("MeshCentralSatelliteServer - " + devname + " - Sent response.");
+                                rps.sendCommand(message);
+                                Log("Open AMT Enterprise Assistant - " + devname + " - Sent response.");
                             }
                             else
                             {
@@ -635,7 +635,7 @@ namespace MeshCentralSatellite
                     }
                 default:
                     {
-                        Log("MeshCentralSatelliteServer - " + devname + " - Unsupported 802.1x protocol: " + netAuthStrings[authProtocol]);
+                        Log("Open AMT Enterprise Assistant - " + devname + " - Unsupported 802.1x protocol: " + netAuthStrings[authProtocol]);
                         break;
                     }
             }
@@ -661,11 +661,11 @@ namespace MeshCentralSatellite
 
             if ((satelliteFlags != 2) || (nodeid == null) || (domain == null))
             {
-                Log("MeshCentralSatelliteServer - Invalid removal request.");
+                Log("Open AMT Enterprise Assistant - Invalid removal request.");
                 return;
             }
 
-            if (devname != null) { Log("MeshCentralSatelliteServer - " + devname + " - 802.1x removal request."); }
+            if (devname != null) { Log("Open AMT Enterprise Assistant - " + devname + " - 802.1x removal request."); }
 
             if ((dc != null) && (dc.RemoveComputer(NodeIdToComputerId(nodeid))))
             {
@@ -679,14 +679,14 @@ namespace MeshCentralSatellite
 
         public void Stop()
         {
-            Log("MeshCentralSatelliteServer - Stop();");
+            Log("Open AMT Enterprise Assistant - Stop();");
             autoReconnect = false;
-            if (meshcentral == null) return;
-            meshcentral.onStateChanged -= Meshcentral_onStateChanged;
-            meshcentral.onTwoFactorCookie -= Meshcentral_onTwoFactorCookie;
-            meshcentral.onSatelliteMessage -= Meshcentral_onSatelliteMessage;
-            try { meshcentral.disconnect(); } catch (Exception) { }
-            meshcentral = null;
+            if (rps == null) return;
+            rps.onStateChanged -= Meshcentral_onStateChanged;
+            rps.onTwoFactorCookie -= Meshcentral_onTwoFactorCookie;
+            rps.onSatelliteMessage -= Meshcentral_onSatelliteMessage;
+            try { rps.disconnect(); } catch (Exception) { }
+            rps = null;
         }
 
         public void Dispose()
@@ -708,11 +708,11 @@ namespace MeshCentralSatellite
                     Log("Disconnected");
                     if (autoReconnect)
                     {
-                        if (meshcentral == null) return;
-                        meshcentral.onStateChanged -= Meshcentral_onStateChanged;
-                        meshcentral.onTwoFactorCookie -= Meshcentral_onTwoFactorCookie;
-                        meshcentral.onSatelliteMessage -= Meshcentral_onSatelliteMessage;
-                        meshcentral = null;
+                        if (rps == null) return;
+                        rps.onStateChanged -= Meshcentral_onStateChanged;
+                        rps.onTwoFactorCookie -= Meshcentral_onTwoFactorCookie;
+                        rps.onSatelliteMessage -= Meshcentral_onSatelliteMessage;
+                        rps = null;
                         Start();
                         return;
                     }
@@ -722,7 +722,7 @@ namespace MeshCentralSatellite
                     break;
                 case 2:
                     Log("Connected");
-                    meshcentral.sendSatelliteSetFlags(3);
+                    rps.sendSatelliteSetFlags(3);
                     break;
             }
             if (onStateChanged != null) { onStateChanged(state); }

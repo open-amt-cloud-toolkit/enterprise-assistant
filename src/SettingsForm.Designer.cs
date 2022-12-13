@@ -1,4 +1,4 @@
-﻿namespace MeshCentralSatellite
+﻿namespace OpenAMTEnterpriseAssistant
 {
     partial class SettingsForm
     {
@@ -96,7 +96,7 @@
             this.groupBox1.Size = new System.Drawing.Size(349, 147);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "MeshCentral Login";
+            this.groupBox1.Text = "RPS Server";
             // 
             // label8
             // 
@@ -261,9 +261,9 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(7, 52);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(51, 13);
+            this.label5.Size = new System.Drawing.Size(74, 13);
             this.label5.TabIndex = 12;
-            this.label5.Text = "Template";
+            this.label5.Text = "TLS Template";
             // 
             // templateComboBox
             // 
@@ -287,7 +287,7 @@
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Location = new System.Drawing.Point(3, 3);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(349, 82);
+            this.groupBox2.Size = new System.Drawing.Size(349, 101);
             this.groupBox2.TabIndex = 11;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Certificate Authority";
@@ -310,9 +310,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.logCheckBox);
             this.groupBox3.Controls.Add(this.debugCheckBox);
-            this.groupBox3.Location = new System.Drawing.Point(3, 244);
+            this.groupBox3.Location = new System.Drawing.Point(3, 257);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(349, 55);
+            this.groupBox3.Size = new System.Drawing.Size(349, 54);
             this.groupBox3.TabIndex = 12;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Logging";
@@ -358,7 +358,7 @@
             this.groupBox4.Controls.Add(this.hostCheckBox);
             this.groupBox4.Controls.Add(this.dnsCheckBox);
             this.groupBox4.Controls.Add(this.dnCheckBox);
-            this.groupBox4.Location = new System.Drawing.Point(3, 91);
+            this.groupBox4.Location = new System.Drawing.Point(3, 104);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(349, 147);
             this.groupBox4.TabIndex = 15;
